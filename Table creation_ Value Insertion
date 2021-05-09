@@ -1,0 +1,117 @@
+1)User table
+create table user (user_id number(8) primary key,password
+varchar(8),date_of_birth date,mobile_no number(10),gives_rating
+number(2),transaction_id number(8));
+desc user;
+
+Insertion:
+insert into user
+values(1234,4321,to_date('25-11-01','dd-mm-yy'),9967543214,3,1457);
+
+1) Reservation table
+create table reservation(pnr number(8) primary key, starting_point
+varchar(20),destination_point varchar(20), fare
+number(6),date_of_journey date,type_of_booking
+varchar(20),no_of_seats number(2));
+desc reservation;
+//Later, after making taxi table, booked_taxi no is inserted by
+ALTER TABLE reservation
+ADD booked_taxi_no references taxi;
+
+insert into reservation
+values(1789,"katpadi","Malaikodi",1800,to_date('13-08-19','dd-mmyy'), "Uber Premium",4,1234,4567);
+
+2) Passenger table
+create table passenger(serial_no number(8) primary key,name
+varchar(25),age number(3),status varchar(12));
+desc passenger;
+
+Insertion:
+insert into passenger values(2345,'joy',18,'confirm');
+
+3) Payment table
+create table payment(transaction_id number(8) primary
+key,base_fare number(5),tax number(5),account_no
+number(8),faculty_fee number(8),user_payment_id references user);
+desc payment;
+insert into payment values(3456,1700,100,1678,3000,1234);
+select * from payment;
+
+4) Taxi Table
+create table taxi(taxi_no number(8) primary key, name
+varchar(20),model_name varchar(20),license_no
+number(8),manufacturer varchar(20),storage
+varchar(20),no_of_seats number(8),type varchar(8));
+desc taxi;
+
+Insertion:
+insert into taxi values(4567,'hackney
+carriage','TX4',1897,'Worship Company','Yes',4,'premium');
+
+5) Tracking Table
+create table tracking(taxi_no number(8) primary key, geological_taxi
+varchar(20),geological_passenger varchar(20),driver_id
+number(9),departure_time timestamp(0),estimated_arrival_time
+timestamp(0),distance number(4));
+desc tracking;
+
+Insertion:
+insert into tracking
+values(4567,'Nellore','katpadi',6666,to_timestamp('07:35','hh24:mi'),to_
+timestamp('07:37','hh24:mi'),160);
+
+6) Driver table
+create table driver(driver_id number(8) primary key, name
+varchar(20),phone_no number(10),ratings number(2));
+desc driver;
+
+Insertion:
+insert into driver values(6666,'raghu',9934564122,5);
+select * from driver;
+
+7) Employee Table
+create table employee(employee_id number(8) primary
+key,employee_name varchar(20),address varchar(20),salary
+number(7),email varchar(40),phone_no number(10),department
+varchar(20),age number(3),ratings number(2),supervisor_id
+references employee);
+desc employee;
+
+Insertion:
+insert into employee
+values(8765,'mitra','Dhanushkodi',10000,'mitra@gmail.com',987678543
+2,'taxi_service',29,5,8765);
+
+8) Phone_no table
+create table phone_no(taxi_no references taxi not
+null,phone_no number(10));
+desc phone_no;
+
+Insertion:
+insert into phone_no values(4567,9876985345);
+select * from phone_no;
+
+9) Contains table
+create table contains(pnr_no references reservation not null, serial_no
+references passenger not null);
+desc contains;
+
+Insertion:
+insert into contains values(1789,2345);
+
+10) Uses table
+create table uses(taxi_no references taxi not
+null,tracking_taxi_no references tracking not null);
+desc uses;
+
+Insertion:
+insert into uses values(4567,1001);
+
+11)11) Drives Table
+create table drives(driver_id references driver not null, taxi_no
+references tracking not null);
+desc drives;
+
+Insertion:
+insert into works_on values(8765,1001);
+select * from works_on;
