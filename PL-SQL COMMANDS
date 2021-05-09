@@ -1,0 +1,111 @@
+7) Define and implement one PL/SQL function and one PL/SQL procedure
+appropriate for the database under
+consideration
+PL/SQL procedure
+declare
+modell varchar(20);
+cursor pas_cur is select taxi_no from taxi WHERE model='&modell';
+pas_rec pas_cur%rowtype;
+begin
+open pas_cur;
+loop fetch pas_cur into pas_rec;
+exit when pas_cur%notfound;
+dbms_output.put_line(pas_rec.taxi_no);
+end loop;
+close pas_cur;
+end;
+/
+
+
+PL/SQL function
+create or replace function emp_age(id number) return number is
+agee employee.age%type;
+cursor pas_cur is select age from employee WHERE employee_id=id;
+pas_rec pas_cur%rowtype;
+begin
+open pas_cur;
+loop fetch pas_cur into pas_rec;
+exit when pas_cur%notfound;
+dbms_output.put_line(pas_rec.age);
+end loop;
+return agee;
+close pas_cur; 
+33
+end;
+/
+
+
+8. Define two business rules appropriate for the database under consideration
+and implement the rules using trigger.
+CREATE TABLE Salgrade (
+ Grade NUMBER,
+ Losal NUMBER,
+ Hisal NUMBER,
+ rating_classification NUMBER)
+CREATE OR REPLACE TRIGGER Salary_check
+BEFORE INSERT OR UPDATE OF salary,rating ON employee
+FOR EACH ROW
+DECLARE
+ Minsal NUMBER;
+ Maxsal NUMBER;
+ Salary_out_of_range EXCEPTION;
+BEGIN
+/* Retrieve the minimum and maximum salary for the
+employee's new job classification from the SALGRADE
+table into MINSAL and MAXSAL: */
+SELECT Minsal, Maxsal INTO Minsal, Maxsal FROM Salgrade
+ WHERE Job_classification = :new.rating;
+/* If the employee's new rating is less than or greater
+than the rating_classification's limits, the exception is
+raised. The exception message is returned and the
+pending INSERT or UPDATE statement that fired the
+trigger is rolled back:*/
+ IF (:new.salary< Minsal OR :new.salary > Maxsal) THEN
+ RAISE Salary_out_of_range;
+ END IF;
+EXCEPTION
+ WHEN Salary_out_of_range THEN
+ Raise_application_error (-20300,'salary either too high or too low');
+34
+ WHEN NO_DATA_FOUND THEN
+ Raise_application_error(-20322,
+ 'Invalid Rating_Classification ');
+END;
+CREATE TABLE Company_holidays (Day DATE);
+CREATE OR REPLACE TRIGGER Emp_permit_changes
+BEFORE INSERT OR DELETE OR UPDATE ON Employee
+DECLARE
+ Dummy INTEGER;
+ Not_on_weekends EXCEPTION;
+ Not_on_holidays EXCEPTION;
+ Non_working_hours EXCEPTION;
+BEGIN
+/* check for weekends: */
+ IF (TO_CHAR(Sysdate, 'DY') = 'SAT' OR
+ TO_CHAR(Sysdate, 'DY') = 'SUN') THEN
+ RAISE Not_on_weekends;
+ END IF;
+/* check for company holidays:*/
+ SELECT COUNT(*) INTO Dummy FROM Company_holidays
+ WHERE TRUNC(Day) = TRUNC(Sysdate);
+ /* TRUNC gets rid of time parts of dates: */
+ IF dummy > 0 THEN
+ RAISE Not_on_holidays;
+ END IF;
+/* Check for work hours (8am to 6pm): */
+ IF (TO_CHAR(Sysdate, 'HH24') < 8 OR
+ TO_CHAR(Sysdate, 'HH24') > 18) THEN
+ RAISE Non_working_hours;
+ END IF;
+EXCEPTION
+ WHEN Not_on_weekends THEN
+ Raise_application_error(-20324,'May not change '
+ ||'employee table during the weekend');
+ WHEN Not_on_holidays THEN
+ Raise_application_error(-20325,'May not change '
+ ||'employee table during a holiday');
+ WHEN Non_working_hours THEN
+ Raise_application_error(-20326,'May not change '
+ ||'Emp_tab table during non-working hours');
+35
+END;
